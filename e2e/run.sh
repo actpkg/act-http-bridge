@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 COMPONENT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-ACT_HOST="${ACT_HOST:-act-host}"
+ACT="${ACT:-act}"
 WASM="$COMPONENT_DIR/target/wasm32-wasip2/release/act_http_bridge.wasm"
 
 # We also need a "backend" ACT component to proxy.
@@ -33,30 +33,30 @@ cleanup() {
 trap cleanup EXIT
 
 # Start the backend (time component)
-"$ACT_HOST" serve "$BACKEND_WASM" --port "$BACKEND_PORT" --host 127.0.0.1 &
+"$ACT" serve "$BACKEND_WASM" --listen "[::1]:$BACKEND_PORT" &
 BACKEND_PID=$!
 
 # Wait for backend to be ready
 for i in $(seq 1 30); do
-  if curl -sf "http://127.0.0.1:$BACKEND_PORT/info" >/dev/null 2>&1; then
+  if curl -sf "http://[::1]:$BACKEND_PORT/info" >/dev/null 2>&1; then
     break
   fi
   sleep 0.1
 done
 
 # Start the bridge component
-"$ACT_HOST" serve "$WASM" --port "$BRIDGE_PORT" --host 127.0.0.1 &
+"$ACT" serve "$WASM" --listen "[::1]:$BRIDGE_PORT" &
 BRIDGE_PID=$!
 
 # Wait for bridge to be ready
 for i in $(seq 1 30); do
-  if curl -sf "http://127.0.0.1:$BRIDGE_PORT/info" >/dev/null 2>&1; then
+  if curl -sf "http://[::1]:$BRIDGE_PORT/info" >/dev/null 2>&1; then
     break
   fi
   sleep 0.1
 done
 
 # Run tests — pass both host URLs as variables
-hurl --test --variable "host=http://127.0.0.1:$BRIDGE_PORT" \
-            --variable "backend=http://127.0.0.1:$BACKEND_PORT" \
+hurl --test --variable "host=http://[::1]:$BRIDGE_PORT" \
+            --variable "backend=http://[::1]:$BACKEND_PORT" \
             "$SCRIPT_DIR"/*.hurl
