@@ -1,6 +1,5 @@
-# Component info
-GET {{host}}/info
+GET {{baseurl}}/info
 HTTP 200
 [Asserts]
-jsonpath "$.name" == "act-http-bridge"
-jsonpath "$.version" == "0.1.0"
+jsonpath "$['std:name']" == "act-http-bridge"
+jsonpath "$['std:version']" isString

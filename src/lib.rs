@@ -10,6 +10,21 @@ wit_bindgen::generate!({
 use act::core::types::*;
 use act_types::cbor;
 
+// WASM custom sections for component metadata.
+// SAFETY: link_section places data in named WASM custom sections; no executable code.
+#[unsafe(link_section = "act:component")]
+#[used]
+static _ACT_COMPONENT: [u8; include_bytes!(concat!(env!("OUT_DIR"), "/act_component.cbor")).len()] =
+    *include_bytes!(concat!(env!("OUT_DIR"), "/act_component.cbor"));
+
+#[unsafe(link_section = "version")]
+#[used]
+static _VERSION: [u8; 5] = *b"0.1.0";
+
+#[unsafe(link_section = "description")]
+#[used]
+static _DESCRIPTION: [u8; 59] = *b"Proxies a remote ACT-HTTP server's tools as local ACT tools";
+
 struct ActHttpBridge;
 
 export!(ActHttpBridge);
@@ -33,36 +48,14 @@ fn to_tool_error(e: &act_client::ActHttpError) -> ToolError {
 }
 
 impl exports::act::core::tool_provider::Guest for ActHttpBridge {
-    fn get_info() -> ComponentInfo {
-        ComponentInfo {
-            name: "act-http-bridge".to_string(),
-            version: "0.1.0".to_string(),
-            default_language: "en".to_string(),
-            description: LocalizedString::Plain(
-                "Proxies a remote ACT-HTTP server's tools as local ACT tools".to_string(),
-            ),
-            capabilities: vec![Capability {
-                id: "wasi:http/outgoing-handler".to_string(),
-                required: true,
-                description: Some(LocalizedString::Plain(
-                    "HTTP client for connecting to remote ACT servers".to_string(),
-                )),
-                metadata: vec![],
-            }],
-            metadata: vec![],
-        }
-    }
-
-    fn get_config_schema() -> Option<String> {
+    async fn get_metadata_schema(_metadata: Vec<(String, Vec<u8>)>) -> Option<String> {
         let schema = schemars::schema_for!(act_client::Config);
         Some(serde_json::to_string(&schema).unwrap())
     }
 
-    async fn list_tools(
-        config: Option<Vec<u8>>,
-    ) -> Result<ListToolsResponse, ToolError> {
-        let config = act_client::parse_config(config.as_deref())
-            .map_err(|e| to_tool_error(&e))?;
+    async fn list_tools(metadata: Vec<(String, Vec<u8>)>) -> Result<ListToolsResponse, ToolError> {
+        let config =
+            act_client::parse_config_from_metadata(&metadata).map_err(|e| to_tool_error(&e))?;
 
         let response = act_client::list_tools(&config)
             .await
@@ -81,10 +74,9 @@ impl exports::act::core::tool_provider::Guest for ActHttpBridge {
     }
 
     async fn call_tool(
-        config: Option<Vec<u8>>,
         call: ToolCall,
     ) -> wit_bindgen::rt::async_support::StreamReader<StreamEvent> {
-        let events = match call_tool_inner(config, call).await {
+        let events = match call_tool_inner(call).await {
             Ok(events) => events,
             Err(e) => vec![StreamEvent::Error(to_tool_error(&e))],
         };
@@ -93,11 +85,8 @@ impl exports::act::core::tool_provider::Guest for ActHttpBridge {
     }
 }
 
-async fn call_tool_inner(
-    config: Option<Vec<u8>>,
-    call: ToolCall,
-) -> Result<Vec<StreamEvent>, act_client::ActHttpError> {
-    let config = act_client::parse_config(config.as_deref())?;
+async fn call_tool_inner(call: ToolCall) -> Result<Vec<StreamEvent>, act_client::ActHttpError> {
+    let config = act_client::parse_config_from_metadata(&call.metadata)?;
 
     // Decode arguments from dCBOR to JSON
     let arguments: serde_json::Value = if call.arguments.is_empty() {

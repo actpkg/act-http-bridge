@@ -5,8 +5,8 @@ use crate::act::core::types::{
 };
 use act_types::cbor::to_cbor;
 use act_types::http;
-use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine as _;
+use base64::engine::general_purpose::STANDARD as BASE64;
 
 /// Convert an ACT-HTTP `ToolDefinition` to a WIT `ToolDefinition`.
 pub fn http_tool_to_wit(tool: &http::ToolDefinition) -> ToolDefinition {
@@ -41,6 +41,7 @@ pub fn http_response_to_events(response: &http::ToolCallResponse) -> Vec<StreamE
 }
 
 /// Convert an ACT-HTTP `ToolError` to a WIT `ToolError`.
+#[cfg_attr(not(test), expect(dead_code))]
 pub fn http_error_to_wit(error: &http::ToolError) -> ToolError {
     let metadata = metadata_json_to_cbor(error.metadata.as_ref());
     ToolError {
@@ -74,9 +75,7 @@ fn metadata_json_to_cbor(metadata: Option<&serde_json::Value>) -> Vec<(String, V
     let Some(serde_json::Value::Object(map)) = metadata else {
         return vec![];
     };
-    map.iter()
-        .map(|(k, v)| (k.clone(), to_cbor(v)))
-        .collect()
+    map.iter().map(|(k, v)| (k.clone(), to_cbor(v))).collect()
 }
 
 #[cfg(test)]
@@ -94,7 +93,9 @@ mod tests {
         };
         let wit_tool = http_tool_to_wit(&http_tool);
         assert_eq!(wit_tool.name, "my-tool");
-        assert!(matches!(wit_tool.description, LocalizedString::Plain(ref s) if s == "A test tool"));
+        assert!(
+            matches!(wit_tool.description, LocalizedString::Plain(ref s) if s == "A test tool")
+        );
         assert!(wit_tool.parameters_schema.contains("\"type\":\"object\""));
         assert!(wit_tool.metadata.is_empty());
     }

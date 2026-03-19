@@ -1,6 +1,6 @@
 use act_types::http::{
-    ErrorResponse, ListToolsResponse, ToolCallRequest, ToolCallResponse, HEADER_PROTOCOL_VERSION,
-    PROTOCOL_VERSION,
+    ErrorResponse, HEADER_PROTOCOL_VERSION, ListToolsResponse, PROTOCOL_VERSION, ToolCallRequest,
+    ToolCallResponse,
 };
 use http::Uri;
 use schemars::JsonSchema;
@@ -45,11 +45,26 @@ impl std::fmt::Display for ActHttpError {
     }
 }
 
-/// Parse config from dCBOR bytes.
-pub fn parse_config(config: Option<&[u8]>) -> Result<Config, ActHttpError> {
-    let bytes = config.ok_or_else(|| ActHttpError::invalid_args("Config is required"))?;
-    act_types::cbor::from_cbor(bytes)
-        .map_err(|e| ActHttpError::invalid_args(format!("Invalid config: {e}")))
+/// Extract Config from metadata key-value pairs.
+/// Each value is CBOR-encoded.
+pub fn parse_config_from_metadata(metadata: &[(String, Vec<u8>)]) -> Result<Config, ActHttpError> {
+    let url = metadata
+        .iter()
+        .find(|(k, _)| k == "url")
+        .map(|(_, v)| act_types::cbor::from_cbor::<String>(v))
+        .transpose()
+        .map_err(|e| ActHttpError::invalid_args(format!("Invalid url in metadata: {e}")))?
+        .ok_or_else(|| ActHttpError::invalid_args("Missing 'url' in metadata"))?;
+
+    let headers = metadata
+        .iter()
+        .find(|(k, _)| k == "headers")
+        .map(|(_, v)| act_types::cbor::from_cbor::<BTreeMap<String, String>>(v))
+        .transpose()
+        .map_err(|e| ActHttpError::invalid_args(format!("Invalid headers in metadata: {e}")))?
+        .unwrap_or_default();
+
+    Ok(Config { url, headers })
 }
 
 /// Fetch tool definitions from a remote ACT-HTTP server.
@@ -68,18 +83,15 @@ pub async fn call_tool(
     tool_name: &str,
     arguments: serde_json::Value,
 ) -> Result<ToolCallResponse, ActHttpError> {
-    let url = format!(
-        "{}/tools/{}",
-        config.url.trim_end_matches('/'),
-        tool_name
-    );
+    let url = format!("{}/tools/{}", config.url.trim_end_matches('/'), tool_name);
     let request = ToolCallRequest {
         arguments,
-        config: None,
+        metadata: None,
     };
     let body = serde_json::to_vec(&request)
         .map_err(|e| ActHttpError::internal(format!("JSON serialize error: {e}")))?;
-    let (status, response_bytes) = http_request_with_status(config, Method::Post, &url, &body).await?;
+    let (status, response_bytes) =
+        http_request_with_status(config, Method::Post, &url, &body).await?;
 
     if !(200..300).contains(&status) {
         // Try to parse as ACT error response
@@ -124,9 +136,7 @@ async fn http_request(
     let (status, bytes) = http_request_with_status(config, method, url, body_bytes).await?;
     if !(200..300).contains(&status) {
         let detail = String::from_utf8_lossy(&bytes);
-        return Err(ActHttpError::internal(format!(
-            "HTTP {status}: {detail}"
-        )));
+        return Err(ActHttpError::internal(format!("HTTP {status}: {detail}")));
     }
     Ok(bytes)
 }
@@ -148,7 +158,7 @@ async fn http_request_with_status(
         Some(other) => {
             return Err(ActHttpError::invalid_args(format!(
                 "Unsupported scheme: {other}"
-            )))
+            )));
         }
         None => return Err(ActHttpError::invalid_args("Missing scheme in URL")),
     };
