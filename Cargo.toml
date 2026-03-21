@@ -13,6 +13,7 @@ ciborium = "0.2"
 base64 = "0.22"
 act-types = "0.2.3"
 http = "1"
+wasi-fetch = "0.1"
 
 [build-dependencies]
 ciborium = "0.2"
