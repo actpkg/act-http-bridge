@@ -1,7 +1,7 @@
 // ACT-HTTP <-> ACT WIT type conversion utilities.
 
 use crate::act::core::types::{
-    ContentPart, LocalizedString, StreamEvent, ToolDefinition, ToolError,
+    ContentPart, LocalizedString, ToolEvent, ToolDefinition, ToolError,
 };
 use act_types::cbor::to_cbor;
 use act_types::http;
@@ -23,15 +23,15 @@ pub fn http_tool_to_wit(tool: &http::ToolDefinition) -> ToolDefinition {
     }
 }
 
-/// Convert an ACT-HTTP `ToolCallResponse` to a list of WIT `StreamEvent`s.
-pub fn http_response_to_events(response: &http::ToolCallResponse) -> Vec<StreamEvent> {
+/// Convert an ACT-HTTP `ToolCallResponse` to a list of WIT `ToolEvent`s.
+pub fn http_response_to_events(response: &http::ToolCallResponse) -> Vec<ToolEvent> {
     response
         .content
         .iter()
         .map(|part| {
             let data = content_data_to_bytes(&part.data, part.mime_type.as_deref());
             let metadata = metadata_json_to_cbor(part.metadata.as_ref());
-            StreamEvent::Content(ContentPart {
+            ToolEvent::Content(ContentPart {
                 data,
                 mime_type: part.mime_type.clone(),
                 metadata,
@@ -141,7 +141,7 @@ mod tests {
         let events = http_response_to_events(&response);
         assert_eq!(events.len(), 1);
         match &events[0] {
-            StreamEvent::Content(cp) => {
+            ToolEvent::Content(cp) => {
                 assert_eq!(cp.data, b"result text");
                 assert_eq!(cp.mime_type.as_deref(), Some("text/plain"));
             }
