@@ -1,19 +1,12 @@
 [package]
-<<<<<<< before updating
 name = "act-http-bridge"
 description = "Proxies a remote ACT-HTTP host as local ACT tools"
 version = "0.1.2"
-=======
-name = "component-act-http-bridge"
-description = ""
-version = "0.1.0"
->>>>>>> after updating
 edition = "2024"
 
 [package.metadata.act-component.std.capabilities."wasi:http"]
 
 [dependencies]
-<<<<<<< before updating
 wit-bindgen = { version = "0.57", features = ["async-spawn"] }
 wasip3 = "0.6"
 serde = { version = "1", features = ["derive"] }
@@ -24,16 +17,12 @@ base64 = "0.22"
 act-types = "0.4.0"
 http = "1"
 wasi-fetch = "0.1.3"
-=======
-act-sdk = "0.2"
-wit-bindgen = { version = "0.54", features = ["async-spawn"] }
 
 [profile.release]
 lto = "fat"
 codegen-units = 1
 strip = true
 opt-level = "z"
->>>>>>> after updating
 
 [lib]
 crate-type = ["cdylib"]
