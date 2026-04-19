@@ -2,5 +2,5 @@ _commit: b29103d
 _src_path: https://github.com/actcore/act-template-rust
 description: Proxies a remote ACT-HTTP server's tools as local ACT tools
 needs_filesystem: false
-needs_http: false
+needs_http: true
 project_name: act-http-bridge
