@@ -1,13 +1,13 @@
-# Call an upstream tool through the bridge. `get_current_time` returns RFC3339
+# Call an upstream tool through the bridge. `get-current-time` returns RFC3339
 # (UTC by default; with a timezone it returns that TZ).
-POST {{baseurl}}/tools/get_current_time
+POST {{baseurl}}/tools/get-current-time
 {"arguments": {}, "metadata": {"url": "{{upstream_url}}"}}
 HTTP 200
 [Asserts]
 jsonpath "$.content[0].data" matches "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
 
 # With a specific timezone
-POST {{baseurl}}/tools/get_current_time
+POST {{baseurl}}/tools/get-current-time
 {"arguments": {"timezone": "Europe/Moscow"}, "metadata": {"url": "{{upstream_url}}"}}
 HTTP 200
 [Asserts]
