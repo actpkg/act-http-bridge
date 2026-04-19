@@ -1,7 +1,10 @@
 [package]
 name = "act-http-bridge"
-version = "0.1.0"
+description = "Proxies a remote ACT-HTTP host as local ACT tools"
+version = "0.1.1"
 edition = "2024"
+
+[package.metadata.act-component.std.capabilities."wasi:http"]
 
 [dependencies]
 wit-bindgen = { version = "0.57", features = ["async-spawn"] }
