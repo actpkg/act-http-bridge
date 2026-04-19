@@ -1,4 +1,4 @@
 _commit: 7a5f5f5
-_src_path: https://github.com/actcore/act-template-rust
+_src_path: /mnt/devenv/workspace/act/templates/act-template-rust
 project_name: act-http-bridge
 description: Proxies a remote ACT-HTTP server's tools as local ACT tools
