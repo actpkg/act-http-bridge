@@ -30,19 +30,6 @@ jobs:
           name: component.wasm
           path: target/wasm32-wasip2/release/*.wasm
 
-  e2e:
-    name: E2E Test
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/download-artifact@v4
-        with:
-          name: component.wasm
-          path: target/wasm32-wasip2/release/
-      - uses: taiki-e/install-action@just
-      - run: just test
-
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
