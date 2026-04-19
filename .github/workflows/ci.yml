@@ -38,12 +38,7 @@ jobs:
         with:
           name: component.wasm
           path: target/wasm32-wasip2/release/
-      - uses: actcore/act-cli/setup@main
-      - uses: moonrepo/setup-rust@v1
-        with:
-          bins: just, hurl
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: taiki-e/install-action@just
       - run: just test
 
   clippy:
