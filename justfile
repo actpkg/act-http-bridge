@@ -35,7 +35,7 @@ test:
     trap 'kill "${PIDS[@]}" 2>/dev/null' EXIT
     {{act}} run {{upstream_image}} --http --listen "{{upstream_addr}}" &
     PIDS+=($!)
-    {{act}} run {{wasm}} --http --listen "{{addr}}" &
+    {{act}} run {{wasm}} --http --listen "{{addr}}" --http-policy open &
     PIDS+=($!)
     npx wait-on -t 180s {{baseurl}}/info "{{upstream_url}}/info"
     {{hurl}} --test \
