@@ -5,4 +5,4 @@ POST {{baseurl}}/tools
 HTTP 200
 [Asserts]
 jsonpath "$.tools" count >= 1
-jsonpath "$.tools[*].name" == "get_current_time"
+jsonpath "$.tools[*].name" contains "get_current_time"
