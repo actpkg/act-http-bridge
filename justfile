@@ -13,7 +13,7 @@ baseurl := "http://" + addr
 
 # Upstream ACT-HTTP server — a real component served by `act run --http`,
 # which the bridge proxies to. Using `time` (simple, pure compute, one tool).
-upstream_image := "ghcr.io/actpkg/time:0.1.1"
+upstream_image := "ghcr.io/actpkg/time:0.1.2"
 upstream_port := `npx get-port-cli`
 upstream_addr := "[::1]:" + upstream_port
 upstream_url := "http://" + upstream_addr
