@@ -4,12 +4,6 @@ description = "Proxies a remote ACT-HTTP host as local ACT tools"
 version = "0.2.0"
 edition = "2024"
 
-[package.metadata.act.std.capabilities."wasi:http"]
-description = "Proxies a remote ACT-HTTP host; forwards all tool calls over HTTP to the configured endpoint."
-
-[[package.metadata.act.std.capabilities."wasi:http".allow]]
-host = "*"
-
 [dependencies]
 wit-bindgen = { version = "0.57", features = ["async-spawn"] }
 wasip3 = "0.6"

@@ -1,2 +1,7 @@
 [std]
+name = "act-http-bridge"
 
+[std.capabilities."wasi:http"]
+
+[[std.capabilities."wasi:http".allow]]
+host = "*"
