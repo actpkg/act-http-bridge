@@ -247,7 +247,7 @@ impl session_exports::Guest for ActHttpBridge {
         });
         if let Some((config, upstream_id)) = upstream {
             // Fire-and-forget — close-session is sync per WIT.
-            wit_bindgen::spawn(async move {
+            wit_bindgen::spawn_local(async move {
                 act_client::close_upstream_session(&config, &upstream_id).await;
             });
         }
