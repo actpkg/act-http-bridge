@@ -22,6 +22,11 @@ use std::collections::HashMap;
 use act_client::{ActHttpError, Config};
 use exports::act::sessions::session_provider as session_exports;
 use exports::act::tools::tool_provider as tool_exports;
+// In act:tools@0.2.0 the data model moved to a function-free `types`
+// interface; `localized-string` lives in act:core. The `tool-provider`
+// export module no longer re-exports these, so reference them directly.
+use act::tools::types::ToolDefinition;
+use act::core::types::LocalizedString;
 
 // ── Session registry (component-scoped) ────────────────────────────────────
 
@@ -69,7 +74,7 @@ fn extract_session_id(metadata: &[(String, Vec<u8>)]) -> Option<String> {
 fn invalid_args(msg: impl Into<String>) -> tool_exports::Error {
     tool_exports::Error {
         kind: act_types::constants::ERR_INVALID_ARGS.to_string(),
-        message: tool_exports::LocalizedString::Plain(msg.into()),
+        message: LocalizedString::Plain(msg.into()),
         metadata: vec![],
     }
 }
@@ -77,7 +82,7 @@ fn invalid_args(msg: impl Into<String>) -> tool_exports::Error {
 fn session_not_found(session_id: &str) -> tool_exports::Error {
     tool_exports::Error {
         kind: act_types::constants::ERR_SESSION_NOT_FOUND.to_string(),
-        message: tool_exports::LocalizedString::Plain(format!("Unknown session-id: {session_id}")),
+        message: LocalizedString::Plain(format!("Unknown session-id: {session_id}")),
         metadata: vec![],
     }
 }
@@ -85,7 +90,7 @@ fn session_not_found(session_id: &str) -> tool_exports::Error {
 fn http_to_wit_error(e: &ActHttpError) -> tool_exports::Error {
     tool_exports::Error {
         kind: e.kind.clone(),
-        message: tool_exports::LocalizedString::Plain(e.message.clone()),
+        message: LocalizedString::Plain(e.message.clone()),
         metadata: vec![],
     }
 }
@@ -121,7 +126,7 @@ impl tool_exports::Guest for ActHttpBridge {
             .await
             .map_err(|e| http_to_wit_error(&e))?;
 
-        let tools: Vec<tool_exports::ToolDefinition> = response
+        let tools: Vec<ToolDefinition> = response
             .tools
             .iter()
             .map(mapping::http_tool_to_wit)
@@ -189,7 +194,7 @@ impl session_exports::Guest for ActHttpBridge {
         let schema = schemars::schema_for!(Config);
         serde_json::to_string(&schema).map_err(|e| session_exports::Error {
             kind: act_types::constants::ERR_INTERNAL.to_string(),
-            message: tool_exports::LocalizedString::Plain(format!(
+            message: LocalizedString::Plain(format!(
                 "Schema serialization failed: {e}"
             )),
             metadata: vec![],
@@ -211,7 +216,7 @@ impl session_exports::Guest for ActHttpBridge {
             serde_json::from_value(serde_json::Value::Object(json_map)).map_err(|e| {
                 session_exports::Error {
                     kind: act_types::constants::ERR_INVALID_ARGS.to_string(),
-                    message: tool_exports::LocalizedString::Plain(format!(
+                    message: LocalizedString::Plain(format!(
                         "Invalid open-session args: {e}"
                     )),
                     metadata: vec![],

@@ -1,8 +1,11 @@
 // ACT-HTTP <-> ACT WIT type conversion utilities.
 
-use crate::exports::act::tools::tool_provider::{
-    ContentPart, LocalizedString, ToolDefinition, ToolEvent,
-};
+// act:tools@0.2.0 moved the data model to the function-free `types`
+// interface; `tool-event` is still re-exported via `tool-provider`,
+// and `localized-string` lives in act:core.
+use crate::act::core::types::LocalizedString;
+use crate::act::tools::types::{ContentPart, ToolDefinition};
+use crate::exports::act::tools::tool_provider::ToolEvent;
 use act_types::cbor::to_cbor;
 use act_types::http;
 use base64::Engine as _;
