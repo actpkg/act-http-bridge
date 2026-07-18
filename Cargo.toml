@@ -1,11 +1,11 @@
 [package]
 name = "act-http-bridge"
 description = "Proxies a remote ACT-HTTP host as local ACT tools"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2024"
 
 [dependencies]
-wit-bindgen = { version = "0.58", features = ["async-spawn"] }
+wit-bindgen = { version = "0.60", features = ["async-spawn"] }
 wasip3 = "0.6"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
