@@ -6,7 +6,7 @@ edition = "2024"
 
 [dependencies]
 wit-bindgen = { version = "0.58", features = ["async-spawn"] }
-wasip3 = "0.6"
+wasip3 = "0.7"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 schemars = "1"

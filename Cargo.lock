@@ -14,7 +14,7 @@ dependencies = [
  "serde",
  "serde_json",
  "wasi-fetch",
- "wasip3 0.6.0+wasi-0.3.0-rc-2026-03-15",
+ "wasip3",
  "wit-bindgen 0.58.0",
 ]
 
@@ -981,16 +981,7 @@ dependencies = [
  "serde",
  "serde_json",
  "url",
- "wasip3 0.7.0+wasi-0.3.0",
-]
-
-[[package]]
-name = "wasip3"
-version = "0.6.0+wasi-0.3.0-rc-2026-03-15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed83456dd6a0b8581998c0365e4651fa2997e5093b49243b7f35391afaa7a3d9"
-dependencies = [
- "wit-bindgen 0.57.1",
+ "wasip3",
 ]
 
 [[package]]
